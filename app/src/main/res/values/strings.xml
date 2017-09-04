@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name">VeSha</string>
+    <string name="facebook_app_id">447077035691708</string>
+    <string name="fb_login_protocol_scheme">fb447077035691708</string>
+
+    <!-- [START] Sign In -->
+    <string name="signin">SIGNIN</string>
+    <string name="phonenumber">Phone Number</string>
+    <string name="password">Password</string>
+    <string name="show_pwd">Show Password</string>
+    <string name="forgot">Forgot</string>
+    <string name="sign_up">Not a Member yet? Sign Up here.</string>
+    <string name="closebutton">Close</string>
+    <!-- [END] Sign In -->
+
+    <!-- [START] Sign Up -->
+    <string name="title_signup">SIGN UP</string>
+    <string name="full_name">Full Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="terms_conditions">By clicking SignUp you agree all the Terms and Conditions.</string>
+    <string name="already_user">Already have Account? Login here.</string>
+    <!-- [END] Sign Up -->
+
+    <!-- [START] Forgot password -->
+    <string name="registered_phonenumber">Please enter your Registered Phone Number below:</string>
+    <string name="back">BACK</string>
+    <string name="submit">SUBMIT</string>
+    <!-- [END] Forgot password -->
+
+    <!-- [START] Confirm code register -->
+    <string name="code_sent">Please enter your code contained message below:</string>
+    <string name="code">Code</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <!-- [END] Confirm code register -->
+
+    <!-- [START] Navigation drawer -->
+    <string name="not_found">not found</string>
+    <!-- [END]  Navigation drawer -->
+</resources>
