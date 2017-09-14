@@ -9,16 +9,19 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import project.vehiclessharing.callback.MainResult;
 import project.vehiclessharing.checker.Checker;
+import project.vehiclessharing.exclass.MRouting;
 import project.vehiclessharing.util.Utils;
 
 /**
@@ -89,6 +92,12 @@ public class MainHelper {
         return checker.checkAccessLocationPermission();
     }
 
+    /**
+     * Get address from location
+     * @param latitude
+     * @param longtitude
+     * @return
+     */
     public List<Address> getAddressFromLocation(double latitude,double longtitude){
         List<Address> addresses  = null;
         Geocoder geocoder = new Geocoder(activity, Locale.getDefault());
@@ -98,6 +107,17 @@ public class MainHelper {
             e.printStackTrace();
         }
         return addresses;
+    }
+
+    /**
+     * Routing two location
+     * @param latLng1
+     * @param latLng2
+     * @param waypoints
+     */
+    public void routeAmongLocations(LatLng latLng1, LatLng latLng2, ArrayList<LatLng> waypoints){
+        MRouting mRouting = new MRouting(mainResult);
+        mRouting.routingAmongLocations(latLng1,latLng2,waypoints);
     }
 
 }

@@ -24,6 +24,20 @@ exports.addMessage = functions.https.onRequest((req, res) => {
   // Push the new message into the Realtime Database using the Firebase Admin SDK.
   admin.database().ref('/messages').push({original: original}).then(snapshot => {
     // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
-    res.status(200).send("Success");
+    res.status(200).send("success");
+  });
+});
+
+exports.addUser = functions.https.onRequest((req, res) => {
+  if(req.method != "POST"){
+    res.status(400).json({error: true, message: "method invalid"});
+    return;
+  }
+  var userId = req.body.userId;
+  var fullName = req.body.fullName;
+  var urlImage = req.body.urlImage;
+  admin.database().ref('/users/' + userId).set({full_name: fullName, url_image: urlImage}).then(snapshot => {
+    // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
+    res.status(200).json({error: false, message: "success"});
   });
 });

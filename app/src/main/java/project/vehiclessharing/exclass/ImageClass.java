@@ -1,4 +1,4 @@
-package project.vehiclessharing.image;
+package project.vehiclessharing.exclass;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;

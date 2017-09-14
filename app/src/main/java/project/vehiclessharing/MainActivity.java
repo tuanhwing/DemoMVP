@@ -1,5 +1,6 @@
 package project.vehiclessharing;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -11,11 +12,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +28,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.directions.route.Route;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -47,6 +52,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
@@ -54,7 +61,9 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import project.vehiclessharing.broadcast.NetworkOrLocationReciver;
-import project.vehiclessharing.image.ImageClass;
+import project.vehiclessharing.exclass.HashMapLocation;
+import project.vehiclessharing.exclass.HashMapMarker;
+import project.vehiclessharing.exclass.ImageClass;
 import project.vehiclessharing.model.MainHelper;
 import project.vehiclessharing.presenter.MainPresenter;
 import project.vehiclessharing.util.Utils;
@@ -69,7 +78,7 @@ public class MainActivity extends AppCompatActivity
         OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         LocationListener, View.OnClickListener {
 
-    private boolean firstTime = true;//Move and add market the first time
+    public static boolean firstTime = true;//Move and add market the first time
     private int signinBy;//value determine account is Google/Facebook
     private FirebaseUser currentUser;//Current user
 
@@ -90,8 +99,12 @@ public class MainActivity extends AppCompatActivity
     private ImageView imgUser;
     //[END] View header
 
+    FloatingActionMenu fabMenu;
+
     //[START]Information request
-    private RelativeLayout inforLayout;
+    com.github.clans.fab.FloatingActionButton fabShowLayoutCreateRequest;
+    private RelativeLayout inforLayoutCreateRequest;
+    private TextView tvDismissCreateRequest;
     private TextView tvSourceLocation;
     private TextView tvDestinationLocation;
     //[END]Information request
@@ -101,12 +114,13 @@ public class MainActivity extends AppCompatActivity
     private GoogleMap googleMap;
     private NetworkOrLocationReciver networkOrLocationReciver;//Listener state network or location service
 
-    private Marker sourceMarker;
-    private Marker destinationMarker;
+    private HashMapMarker hashMapMarker;//Hashmap store all markers inside map
+    private HashMapLocation hashMapLocation;//Hashmap store all loations inside map
+    private ArrayList<Route> arrCurrentUserRoute;//array list points of routing
+    private Polyline polyline;
 
-    private ArrayList<LatLng> arrAllLocation;
-
-
+    //temp
+    RelativeLayout relativeLayouttemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,10 +151,56 @@ public class MainActivity extends AppCompatActivity
         addEvents();
         setContentUIHeader();
 
-        inforLayout = (RelativeLayout) findViewById(R.id.layout_inforequest);
-        inforLayout.bringToFront();
+//        inforLayout = (RelativeLayout) findViewById(R.id.layout_inforequest);
+//        inforLayout.bringToFront();
 
 
+        //temp
+
+//        fab = (FloatingActionButton) findViewById(R.id.fab);
+//        relativeLayouttemp = (RelativeLayout) findViewById(R.id.layout_request);
+//        final TextView imgbtn = (TextView) findViewById(R.id.btn_back_relayout);
+//        relativeLayouttemp.bringToFront();
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                relativeLayouttemp.setVisibility(View.VISIBLE);
+//            }
+//        });
+//
+//        imgbtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                relativeLayouttemp.setVisibility(View.INVISIBLE);
+//            }
+//        });
+
+        getPhoneInfo();
+//        HashMap<String,String> params = new HashMap<>();
+//        Log.d("Token_signin1",String.valueOf(FirebaseAuth.getInstance().getCurrentUser().getIdToken(true)));
+//        Log.d("Token_signin2",String.valueOf(FirebaseAuth.getInstance().getCurrentUser().getIdToken(false)));
+////        params.put("userId",FirebaseAuth.getInstance().getCurrentUser().getUid());
+//        params.put("text","demo");
+//        MakeRequest.makingRequest(Utils.STRING_URL_API + "addMessage?text={text}", Request.Method.GET, params, new RequestCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//                Toast.makeText(getApplicationContext(), "addUser success", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onError(VolleyError error) {
+//                Toast.makeText(getApplicationContext(), "addUser error", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+    }
+
+    private void getPhoneInfo() {
+        if(ContextCompat.checkSelfPermission(getBaseContext(), "android.permission.READ_SMS") == PackageManager.PERMISSION_GRANTED) {
+            TelephonyManager tMgr = (TelephonyManager)this.getSystemService(Context.TELEPHONY_SERVICE);
+            Log.e("request_phonenumber", "PHONE NUMBER = " + tMgr.getLine1Number());
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{"android.permission.READ_SMS"}, Utils.REQ_PERMISSION_READ_SMS);
+        }
     }
 
     private void addEvents() {
@@ -155,6 +215,8 @@ public class MainActivity extends AppCompatActivity
         //[END] Broadcast
 
         //[START]Information request
+        fabShowLayoutCreateRequest.setOnClickListener(this);
+        tvDismissCreateRequest.setOnClickListener(this);
         tvSourceLocation.setOnClickListener(this);
         tvDestinationLocation.setOnClickListener(this);
         //[END]Information request
@@ -162,6 +224,8 @@ public class MainActivity extends AppCompatActivity
 
     private void addControls() {
         navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        fabMenu = (FloatingActionMenu) findViewById(R.id.fab_menu);
 
         //[START] View header
         viewHeader = navigationView.getHeaderView(0);
@@ -171,7 +235,10 @@ public class MainActivity extends AppCompatActivity
         //[END] View header
 
         //[START]Information request
-        inforLayout = (RelativeLayout) findViewById(R.id.layout_inforequest);
+        fabShowLayoutCreateRequest = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fab_menu_item_1);
+        inforLayoutCreateRequest = (RelativeLayout) findViewById(R.id.layout_create_request);
+        inforLayoutCreateRequest.bringToFront();
+        tvDismissCreateRequest = (TextView) findViewById(R.id.tv_dismiss_create_request);
         tvSourceLocation = (TextView) findViewById(R.id.tv_source);
         tvDestinationLocation = (TextView) findViewById(R.id.tv_destination);
         //[END]Information request
@@ -183,8 +250,9 @@ public class MainActivity extends AppCompatActivity
         //Broadcast
         networkOrLocationReciver = new NetworkOrLocationReciver(mainPresenter,this);
 
-        //ArrayList Location
-        arrAllLocation = new ArrayList<LatLng>();
+        //Hashmap store all markers and locations
+        hashMapMarker = new HashMapMarker();
+        hashMapLocation = new HashMapLocation();
     }
 
     /**
@@ -368,7 +436,12 @@ public class MainActivity extends AppCompatActivity
 
                 googleMap.animateCamera(cu);
 
-//                mainPresenter.routeBetweenTwoLocation()
+                //Temp Routing
+                if(arrayList.size() >= 3){
+                    mainPresenter.routeAmongLocations(hashMapLocation.getLatlng(Utils.STRING_KEY_START_CURRENT_USER),
+                        hashMapLocation.getLatlng(Utils.STRING_KEY_DESTINATION_CURRENT_USER), null);
+                }
+
             }
         }
     }
@@ -399,31 +472,51 @@ public class MainActivity extends AppCompatActivity
     public void addMarker(LatLng latLng,int idTextView) {
         switch (idTextView){
             case R.id.tv_source: {
-                sourceLatlng = latLng;
-                arrAllLocation.add(sourceLatlng);
-                if(sourceMarker == null)
-                    sourceMarker = googleMap.addMarker(new MarkerOptions()
-                            .position(new LatLng(latLng.latitude, latLng.longitude))
-                            .icon(ImageClass.vectorToBitmap(R.drawable.ic_marker_current, Color.parseColor("#056087"),getResources()))
-                    );
+                hashMapLocation.addLatLngIntoHashMap(Utils.STRING_KEY_START_CURRENT_USER,latLng);
+                if(hashMapMarker.getMarker(Utils.STRING_KEY_START_CURRENT_USER) == null)
+                    hashMapMarker.addMarkerIntoHashMap(Utils.STRING_KEY_START_CURRENT_USER,
+                            mainPresenter.addMarkerIntoMap(latLng,"#056087",R.drawable.ic_marker_current));
                 else
-                    sourceMarker.setPosition(latLng);
+                    hashMapMarker.getMarker(Utils.STRING_KEY_START_CURRENT_USER).setPosition(latLng);
                 break;
             }
             case R.id.tv_destination: {
-                destinationLatlng = latLng;
-                arrAllLocation.add(destinationLatlng);
-                if(destinationMarker == null)
-                    destinationMarker = googleMap.addMarker(new MarkerOptions()
-                            .position(new LatLng(latLng.latitude, latLng.longitude))
-                            .icon(ImageClass.vectorToBitmap(R.drawable.ic_marker_current, Color.parseColor("#FE2E2E"),getResources()))
-                    );
+                hashMapLocation.addLatLngIntoHashMap(Utils.STRING_KEY_DESTINATION_CURRENT_USER,latLng);
+                if(hashMapMarker.getMarker(Utils.STRING_KEY_DESTINATION_CURRENT_USER) == null)
+                    hashMapMarker.addMarkerIntoHashMap(Utils.STRING_KEY_DESTINATION_CURRENT_USER,
+                            mainPresenter.addMarkerIntoMap(latLng,"#FE2E2E",R.drawable.ic_marker_current));
                 else
-                    destinationMarker.setPosition(latLng);
+                    hashMapMarker.getMarker(Utils.STRING_KEY_DESTINATION_CURRENT_USER).setPosition(latLng);
                 break;
             }
         }
-        mainPresenter.moveCameraToLocation(arrAllLocation);
+        mainPresenter.moveCameraToLocation(hashMapLocation.getListLatlng());
+    }
+
+    @Override
+    public Marker addMarkerIntoMap(LatLng latLng, String color, int drawer) {
+        return googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(latLng.latitude, latLng.longitude))
+                .icon(ImageClass.vectorToBitmap(drawer, Color.parseColor(color),getResources()))
+        );
+    }
+
+    @Override
+    public void updateUIRoutingSuccess(ArrayList<Route> arrayList) {
+        try {
+            arrCurrentUserRoute = arrayList;
+            if (polyline != null) polyline.remove();
+            PolylineOptions polyoptions = new PolylineOptions();
+            polyoptions.color(Color.BLUE);
+            polyoptions.width(10);
+            for (int i = 0; i < arrayList.size(); i++) {
+                polyoptions.addAll(arrayList.get(i).getPoints());
+                polyline = googleMap.addPolyline(polyoptions);
+            }
+        } catch (Exception e){
+            Log.d("routing_error",String.valueOf(e.getMessage()));
+        }
+
     }
 
     @Override
@@ -451,6 +544,10 @@ public class MainActivity extends AppCompatActivity
                     // functionality that depends on this permission.
                     Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
+                break;
+            }
+            case Utils.REQ_PERMISSION_READ_SMS: {
+                getPhoneInfo();
                 break;
             }
         }
@@ -488,10 +585,11 @@ public class MainActivity extends AppCompatActivity
         currentLocation = location;
         if(firstTime){
             firstTime = false;
-            inforLayout.setVisibility(View.VISIBLE);
+                fabMenu.setVisibility(View.VISIBLE);
             mainPresenter.setMyLocationEnable(true);
-            arrAllLocation.add(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()));
-            mainPresenter.moveCameraToLocation(arrAllLocation);
+            hashMapLocation.addLatLngIntoHashMap(Utils.STRING_KEY_CURRENTLOCATION_CURRNET_USER,
+                    new LatLng(location.getLatitude(), location.getLongitude()));
+            mainPresenter.moveCameraToLocation(hashMapLocation.getListLatlng());
         }
         Log.d("location_changed",String.valueOf(location));
     }
@@ -551,6 +649,18 @@ public class MainActivity extends AppCompatActivity
                 mainPresenter.findPlace(Utils.REQ_RESULT_DESTINATION_PLACE);
                 break;
             }
+            case R.id.tv_dismiss_create_request:{
+                inforLayoutCreateRequest.setVisibility(View.INVISIBLE);
+                break;
+            }
+            case R.id.fab_menu_item_1: {
+                if(inforLayoutCreateRequest.getVisibility() == View.VISIBLE)
+                    inforLayoutCreateRequest.setVisibility(View.INVISIBLE);
+                else
+                    inforLayoutCreateRequest.setVisibility(View.VISIBLE);
+                break;
+            }
         }
     }
+
 }

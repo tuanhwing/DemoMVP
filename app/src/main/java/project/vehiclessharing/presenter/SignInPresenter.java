@@ -2,7 +2,6 @@ package project.vehiclessharing.presenter;
 
 import com.facebook.AccessToken;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.firebase.auth.FirebaseUser;
 
 import project.vehiclessharing.callback.SignInResult;
 import project.vehiclessharing.model.SignInHelper;
@@ -23,9 +22,9 @@ public class SignInPresenter implements SignInResult {
         this.model.setOnSignInResult(this);
     }
 
-    public void startMainActivity(FirebaseUser user){
+    public void startMainActivity(){
         view.dismissSignInProgress();
-        view.startMainActivity(user);
+        view.startMainActivity();
     }
 
     /**
@@ -48,8 +47,8 @@ public class SignInPresenter implements SignInResult {
     }
 
     @Override
-    public void onSignInSuccess(FirebaseUser user) {
-        view.signInSuccess(user);
+    public void onSignInSuccess() {
+        view.signInSuccess();
     }
 
     @Override

@@ -195,7 +195,7 @@ public class SignInFragment extends Fragment implements SignInView,
 
                             FirebaseUser user = task.getResult().getUser();
                             // [START_EXCLUDE]
-                           startMainActivity(user);
+                           startMainActivity();
                             // [END_EXCLUDE]
                         } else {
                             // Sign in failed, display a message and update the UI
@@ -323,9 +323,9 @@ public class SignInFragment extends Fragment implements SignInView,
     }
 
     @Override
-    public void signInSuccess(FirebaseUser user) {
+    public void signInSuccess() {
         //switch activty
-        signInPresenter.startMainActivity(user);
+        signInPresenter.startMainActivity();
 
     }
 
@@ -336,7 +336,7 @@ public class SignInFragment extends Fragment implements SignInView,
     }
 
     @Override
-    public void startMainActivity(FirebaseUser user) {
+    public void startMainActivity() {
         startActivity(new Intent(getActivity(),MainActivity.class));
         getActivity().overridePendingTransition(0, 0);
         getActivity().finish();
@@ -345,10 +345,7 @@ public class SignInFragment extends Fragment implements SignInView,
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-//            case R.id.btn_gg_signin: {
-//                signInPresenter.signIn(Utils.GoogleSignIn);
-//                break;
-//            }
+
             case R.id.tv_signin_facebook: {
                 btnFBSignIn.performClick();
                 break;
@@ -358,7 +355,6 @@ public class SignInFragment extends Fragment implements SignInView,
                 break;
             }
             case R.id.tv_signin_phone: {
-//                startPhoneNumberVerification(edPhone.getText().toString());
                 new SignInActivity().placeForgotPasswordFragment();
                 break;
             }

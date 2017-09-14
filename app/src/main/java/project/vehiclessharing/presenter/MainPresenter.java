@@ -2,9 +2,12 @@ package project.vehiclessharing.presenter;
 
 import android.widget.TextView;
 
+import com.directions.route.Route;
+import com.directions.route.RouteException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
@@ -94,6 +97,20 @@ public class MainPresenter implements MainResult {
         view.addMarker(latLng, idTextView);
     }
 
+    public Marker addMarkerIntoMap(LatLng latLng,String color, int drawer){
+        return view.addMarkerIntoMap(latLng,color,drawer);
+    }
+
+    /**
+     * Routing path among locations
+     * @param start
+     * @param destination
+     * @param waypoints
+     */
+    public void routeAmongLocations(LatLng start, LatLng destination, ArrayList<LatLng> waypoints){
+        model.routeAmongLocations(start,destination,waypoints);
+    }
+
     /**
      * Sign out with account Facebook
      */
@@ -104,6 +121,16 @@ public class MainPresenter implements MainResult {
     @Override
     public void signOutSuccess() {
         view.signOutSuccess();
+    }
+
+    @Override
+    public void routingSuccess(ArrayList<Route> arrayList) {
+        view.updateUIRoutingSuccess(arrayList);
+    }
+
+    @Override
+    public void routingFailure(RouteException e) {
+
     }
 
 }
